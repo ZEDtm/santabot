@@ -12,34 +12,6 @@ from config import settings
 from database import models
 from utils.logging import setup_logging, get_logger
 
-class GroupChatMiddleware(BaseMiddleware):
-    """Middleware to handle group chat commands"""
-    async def __call__(
-        self,
-        handler: Callable[[types.Message, Dict[str, Any]], Awaitable[Any]],
-        event: types.Message,
-        data: Dict[str, Any]
-    ) -> Any:
-        # Skip if not a command
-        if not event.text or not event.text.startswith('/'):
-            return await handler(event, data)
-            
-        # Get the command without bot username and parameters
-        command = event.text.split('@')[0].split(' ')[0][1:].lower()
-        
-        # Allow only specific commands in groups
-        allowed_commands = ['start', 'help', 'link', 'link_chat']
-        
-        # if event.chat.type in ['group', 'supergroup'] and command not in allowed_commands:
-        #     if event.text.startswith('/'):
-        #         await event.reply(
-        #             "❌ Эта команда недоступна в групповых чатах. "
-        #             "Используйте личные сообщения для управления ботом."
-        #         )
-        #     return None
-            
-        return await handler(event, data)
-
 # Setup logging
 setup_logging()
 logger = get_logger(__name__)
@@ -59,9 +31,6 @@ admin.register_handlers(dp)
 user.register_handlers(dp)
 messaging.register_handlers(dp)
 group_chat.register_group_handlers(dp, bot)  # Pass bot instance to group chat handlers
-
-# Disable commands in groups
-dp.message.middleware(GroupChatMiddleware())
 
 async def on_startup() -> None:
     """Actions on bot startup"""
